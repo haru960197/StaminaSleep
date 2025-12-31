@@ -113,7 +113,7 @@ export default function Dashboard() {
 
         {/* Scatter Chart: Pressure vs Mood */}
         <div className="bg-white p-4 shadow rounded-lg">
-          <h2 className="text-lg font-semibold mb-4">Pressure vs. Mood</h2>
+          <h2 className="text-lg font-semibold mb-4">hPa vs. Mood</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
