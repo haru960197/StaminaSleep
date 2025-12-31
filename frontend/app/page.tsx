@@ -82,7 +82,7 @@ export default function Dashboard() {
                 {analysis.feedback}
               </p>
               <p className="text-xs text-blue-500 mt-1">
-                Avg Sleep: {analysis.averageSleepDuration.toFixed(1)}h | Correlation: {analysis.pressureMoodCorrelation.toFixed(2)}
+                Avg Sleep: {(analysis.averageSleepDuration ?? 0).toFixed(1)}h | Correlation: {(analysis.pressureMoodCorrelation ?? 0).toFixed(2)}
               </p>
               {analysis.goodSleepConditions.temp && (
                  <p className="text-xs text-blue-500">

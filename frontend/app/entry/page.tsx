@@ -6,9 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function EntryPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateSleepLogDto>();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<CreateSleepLogDto>({
+    defaultValues: {
+      quality: 3,
+      mood: 3,
+    }
+  });
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  
+  const watchedQuality = watch('quality');
+  const watchedMood = watch('mood');
 
   const onSubmit = async (data: CreateSleepLogDto) => {
     try {
@@ -55,27 +63,27 @@ export default function EntryPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Sleep Quality (1-5)</label>
-          <select
-            {...register('quality', { required: true })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-          >
-            {[1, 2, 3, 4, 5].map((v) => (
-              <option key={v} value={v}>{v}</option>
-            ))}
-          </select>
+          <label className="block text-sm font-medium text-gray-700">Sleep Quality (1.0-5.0): {watchedQuality}</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.1"
+            {...register('quality', { required: true, valueAsNumber: true })}
+            className="mt-1 block w-full"
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Mood (1-5)</label>
-          <select
-            {...register('mood', { required: true })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-          >
-            {[1, 2, 3, 4, 5].map((v) => (
-              <option key={v} value={v}>{v}</option>
-            ))}
-          </select>
+          <label className="block text-sm font-medium text-gray-700">Mood (1.0-5.0): {watchedMood}</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.1"
+            {...register('mood', { required: true, valueAsNumber: true })}
+            className="mt-1 block w-full"
+          />
         </div>
 
         <div>

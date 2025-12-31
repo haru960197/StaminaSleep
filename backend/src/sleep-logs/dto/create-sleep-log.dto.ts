@@ -7,12 +7,12 @@ export class CreateSleepLogDto {
   @IsDateString()
   wakeTime: string;
 
-  @IsInt()
+  @IsNumber()
   @Min(1)
   @Max(5)
   quality: number;
 
-  @IsInt()
+  @IsNumber()
   @Min(1)
   @Max(5)
   mood: number;

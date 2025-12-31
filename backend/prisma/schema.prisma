@@ -25,8 +25,8 @@ model SleepLog {
   user             User     @relation(fields: [userId], references: [id])
   bedtime          DateTime
   wakeTime         DateTime
-  quality          Int      // 1-5
-  mood             Int      // 1-5
+  quality          Float    // 1-5
+  mood             Float    // 1-5
   memo             String?
   temperature      Float?
   pressure         Float?
