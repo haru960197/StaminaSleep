@@ -12,10 +12,11 @@ export class CreateSleepLogDto {
   @Max(5)
   quality: number;
 
+  @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(5)
-  mood: number;
+  vitality?: number;
 
   @IsOptional()
   @IsString()

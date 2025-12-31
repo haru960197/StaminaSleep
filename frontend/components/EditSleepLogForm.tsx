@@ -1,45 +1,58 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
-import { api, CreateSleepLogDto } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { api, SleepLog, UpdateSleepLogDto } from '@/lib/api';
 import { useState } from 'react';
 
-export default function EntryPage() {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<CreateSleepLogDto>({
+interface EditSleepLogFormProps {
+  log: SleepLog;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function toLocalISOString(dateString: string): string {
+  const date = new Date(dateString);
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  const localDate = new Date(date.getTime() - offsetMs);
+  return localDate.toISOString();
+}
+
+export function EditSleepLogForm({ log, onClose, onSuccess }: EditSleepLogFormProps) {
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<UpdateSleepLogDto>({
     defaultValues: {
-      quality: 3,
-      vitality: 3,
+      bedtime: toLocalISOString(log.bedtime).slice(0, 16),
+      wakeTime: toLocalISOString(log.wakeTime).slice(0, 16),
+      quality: log.quality,
+      vitality: log.vitality || undefined,
+      memo: log.memo || '',
     }
   });
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  
+
   const watchedQuality = watch('quality');
   const watchedVitality = watch('vitality');
 
-  const onSubmit = async (data: CreateSleepLogDto) => {
+  const onSubmit = async (data: UpdateSleepLogDto) => {
     try {
-      // Ensure types are correct
       const payload = {
         ...data,
         quality: Number(data.quality),
         vitality: data.vitality ? Number(data.vitality) : undefined,
-        bedtime: new Date(data.bedtime).toISOString(),
-        wakeTime: new Date(data.wakeTime).toISOString(),
+        bedtime: new Date(data.bedtime!).toISOString(),
+        wakeTime: new Date(data.wakeTime!).toISOString(),
       };
       
-      await api.post('/sleep-logs', payload);
-      router.push('/');
+      await api.patch(`/sleep-logs/${log.id}`, payload);
+      onSuccess();
+      onClose();
     } catch (e) {
       console.error(e);
-      setError('Failed to submit sleep log');
+      setError('Failed to update sleep log');
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6">New Sleep Log</h1>
+    <div className="mt-4">
       {error && <div className="text-red-500 mb-4">{error}</div>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -49,7 +62,6 @@ export default function EntryPage() {
             {...register('bedtime', { required: true })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
           />
-          {errors.bedtime && <span className="text-red-500 text-xs">Required</span>}
         </div>
 
         <div>
@@ -59,7 +71,6 @@ export default function EntryPage() {
             {...register('wakeTime', { required: true })}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
           />
-          {errors.wakeTime && <span className="text-red-500 text-xs">Required</span>}
         </div>
 
         <div>
@@ -75,7 +86,7 @@ export default function EntryPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Vitality (1.0-5.0): {watchedVitality}</label>
+          <label className="block text-sm font-medium text-gray-700">Vitality (1.0-5.0): {watchedVitality ?? 'Not set'}</label>
           <input
             type="range"
             min="1"
@@ -94,12 +105,21 @@ export default function EntryPage() {
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Save
-        </button>
+        <div className="flex justify-end space-x-2">
+            <button
+            type="button"
+            onClick={onClose}
+            className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+            >
+            Cancel
+            </button>
+            <button
+            type="submit"
+            className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+            >
+            Update
+            </button>
+        </div>
       </form>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { api, SleepLog } from '@/lib/api';
 import Link from 'next/link';
 import {
@@ -14,6 +14,8 @@ import {
   ScatterChart,
   Scatter,
 } from 'recharts';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EditSleepLogForm } from '@/components/EditSleepLogForm';
 
 interface AnalysisData {
   averageSleepDuration: number;
@@ -28,18 +30,29 @@ interface AnalysisData {
 export default function Dashboard() {
   const [logs, setLogs] = useState<SleepLog[]>([]);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [editingLog, setEditingLog] = useState<SleepLog | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    // Fetch logs
-    api.get<SleepLog[]>('/sleep-logs')
+  const fetchLogs = useCallback(() => {
+     api.get<SleepLog[]>('/sleep-logs')
       .then((res) => setLogs(res.data))
       .catch((err) => console.error(err));
+  }, []);
 
-    // Fetch analysis
+  const fetchAnalysis = useCallback(() => {
     api.get<AnalysisData>('/analysis')
       .then((res) => setAnalysis(res.data))
       .catch((err) => console.error(err));
   }, []);
+
+  const refreshData = useCallback(() => {
+      fetchLogs();
+      fetchAnalysis();
+  }, [fetchLogs, fetchAnalysis]);
+
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   // Prepare data for Bar Chart (Last 7 days)
   const last7DaysLogs = logs.slice(0, 7).reverse().map(log => {
@@ -50,13 +63,18 @@ export default function Dashboard() {
       };
   });
 
-  // Prepare data for Scatter Chart (Pressure vs Mood)
+  // Prepare data for Scatter Chart (Pressure vs Vitality)
   const scatterData = logs
-    .filter(log => log.pressure != null && log.mood != null)
+    .filter(log => log.pressure != null && log.vitality != null)
     .map(log => ({
       pressure: log.pressure,
-      mood: log.mood,
+      vitality: log.vitality,
     }));
+
+  const handleEditClick = (log: SleepLog) => {
+    setEditingLog(log);
+    setIsDialogOpen(true);
+  };
 
   return (
     <div className="max-w-6xl mx-auto mt-10 p-6 space-y-8">
@@ -111,15 +129,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Scatter Chart: Pressure vs Mood */}
+        {/* Scatter Chart: Pressure vs Vitality */}
         <div className="bg-white p-4 shadow rounded-lg">
-          <h2 className="text-lg font-semibold mb-4">hPa vs. Mood</h2>
+          <h2 className="text-lg font-semibold mb-4">hPa vs. Vitality</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid />
                 <XAxis type="number" dataKey="pressure" name="Pressure" unit="hPa" domain={['auto', 'auto']} />
-                <YAxis type="number" dataKey="mood" name="Mood" unit="" domain={[0, 6]} tickCount={6} />
+                <YAxis type="number" dataKey="vitality" name="Vitality" unit="" domain={[0, 6]} tickCount={6} />
                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                 <Scatter name="Logs" data={scatterData} fill="#82ca9d" />
               </ScatterChart>
@@ -130,13 +148,17 @@ export default function Dashboard() {
 
       {/* List (Existing) */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <h2 className="px-4 py-4 sm:px-6 text-lg font-semibold border-b border-gray-200">Recent Logs</h2>
+        <h2 className="px-4 py-4 sm:px-6 text-lg font-semibold border-b border-gray-200">Recent Logs (Click to Edit)</h2>
         <ul className="divide-y divide-gray-200">
           {logs.length === 0 && (
             <li className="p-4 text-center text-gray-500">No logs found.</li>
           )}
           {logs.map((log) => (
-            <li key={log.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+            <li 
+                key={log.id} 
+                className="px-4 py-4 sm:px-6 hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleEditClick(log)}
+            >
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium text-indigo-600 truncate">
                   {new Date(log.bedtime).toLocaleString()} - {new Date(log.wakeTime).toLocaleString()}
@@ -151,7 +173,7 @@ export default function Dashboard() {
                     Q: {log.quality}
                   </span>
                   <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    M: {log.mood}
+                    V: {log.vitality ?? '-'}
                   </span>
                 </div>
               </div>
@@ -164,6 +186,21 @@ export default function Dashboard() {
           ))}
         </ul>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Sleep Log</DialogTitle>
+          </DialogHeader>
+          {editingLog && (
+            <EditSleepLogForm 
+                log={editingLog} 
+                onClose={() => setIsDialogOpen(false)} 
+                onSuccess={refreshData} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

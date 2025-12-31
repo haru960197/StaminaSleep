@@ -20,7 +20,7 @@ export interface SleepLog {
   bedtime: string;
   wakeTime: string;
   quality: number;
-  mood: number;
+  vitality?: number;
   memo?: string;
   temperature?: number;
   pressure?: number;
@@ -33,9 +33,12 @@ export interface CreateSleepLogDto {
   bedtime: string;
   wakeTime: string;
   quality: number;
-  mood: number;
+  vitality?: number;
   memo?: string;
   temperature?: number;
   pressure?: number;
   weatherCondition?: string;
 }
+
+export interface UpdateSleepLogDto extends Partial<CreateSleepLogDto> {}
+

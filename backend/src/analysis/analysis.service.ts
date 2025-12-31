@@ -27,18 +27,18 @@ export class AnalysisService {
     });
     const avgDuration = durations.length > 0 ? ss.mean(durations) : 0;
 
-    // 2. Correlation: Pressure vs Mood
-    // Filter logs that have pressure
-    const pressureMoodData = logs
-      .filter(l => l.pressure !== null && l.mood !== null)
-      .map(l => [l.pressure, l.mood]);
+    // 2. Correlation: Pressure vs Vitality
+    // Filter logs that have pressure and vitality
+    const pressureVitalityData = logs
+      .filter(l => l.pressure !== null && l.vitality !== null)
+      .map(l => [l.pressure, l.vitality]);
     
     let correlation = 0;
-    if (pressureMoodData.length > 2) {
+    if (pressureVitalityData.length > 2) {
         // simple-statistics sampleCorrelation takes two arrays
-        const pressure = pressureMoodData.map(d => d[0] as number);
-        const mood = pressureMoodData.map(d => d[1] as number);
-        correlation = ss.sampleCorrelation(pressure, mood);
+        const pressure = pressureVitalityData.map(d => d[0] as number);
+        const vitality = pressureVitalityData.map(d => d[1] as number);
+        correlation = ss.sampleCorrelation(pressure, vitality);
     }
 
     // 3. Good Sleep Conditions (Quality >= 4)
