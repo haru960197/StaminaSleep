@@ -6,8 +6,10 @@ import * as ss from 'simple-statistics';
 export class AnalysisService {
   constructor(private prisma: PrismaService) {}
 
-  async getAnalysis() {
-    const logs = await this.prisma.sleepLog.findMany();
+  async getAnalysis(userId: number) {
+    const logs = await this.prisma.sleepLog.findMany({
+      where: { userId },
+    });
 
     if (logs.length === 0) {
       return {

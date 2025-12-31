@@ -11,11 +11,12 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sleepLogs SleepLog[]
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  firebaseUid String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sleepLogs   SleepLog[]
 }
 
 model SleepLog {

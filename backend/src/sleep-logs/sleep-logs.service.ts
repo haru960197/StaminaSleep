@@ -10,17 +10,7 @@ export class SleepLogsService {
     private weatherService: WeatherService,
   ) {}
 
-  async create(createSleepLogDto: CreateSleepLogDto) {
-    // Ensure dummy user exists
-    const user = await this.prisma.user.upsert({
-      where: { id: 1 },
-      update: {},
-      create: {
-        id: 1,
-        email: 'dummy@example.com',
-      },
-    });
-
+  async create(userId: number, createSleepLogDto: CreateSleepLogDto) {
     // Fetch weather data
     let weatherData = {};
     try {
@@ -40,13 +30,14 @@ export class SleepLogsService {
       data: {
         ...createSleepLogDto,
         ...weatherData,
-        userId: user.id,
+        userId: userId,
       },
     });
   }
 
-  async findAll() {
+  async findAll(userId: number) {
     return this.prisma.sleepLog.findMany({
+      where: { userId },
       orderBy: {
         createdAt: 'desc',
       },

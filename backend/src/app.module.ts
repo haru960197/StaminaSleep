@@ -6,6 +6,7 @@ import { SleepLogsModule } from './sleep-logs/sleep-logs.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WeatherModule } from './weather/weather.module';
 import { AnalysisModule } from './analysis/analysis.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AnalysisModule } from './analysis/analysis.module';
     PrismaModule,
     WeatherModule,
     AnalysisModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
