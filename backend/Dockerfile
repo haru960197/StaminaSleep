@@ -34,6 +34,7 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/src/generated/client/*.node ./dist/generated/client/
 
 # Generate Prisma Client again for production environment to ensure correct binary targets if needed
 # (Often copying from builder is enough if same architecture, but safe to regenerate or copy engines)
