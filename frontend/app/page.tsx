@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api, SleepLog } from '@/lib/api';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import {
   ComposedChart,
   Line,
@@ -34,6 +37,7 @@ export default function Dashboard() {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [editingLog, setEditingLog] = useState<SleepLog | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
 
   const fetchLogs = useCallback(() => {
      api.get<SleepLog[]>('/sleep-logs')
@@ -55,6 +59,15 @@ export default function Dashboard() {
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   // Prepare data for Composed Chart (Last 7 days)
   const last7DaysLogs = logs.slice(0, 7).reverse().map(log => {
@@ -84,9 +97,17 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto mt-10 p-6 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Sleep Dashboard</h1>
-        <Link href="/entry" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-          Add Log
-        </Link>
+        <div className="flex space-x-4">
+          <Link href="/entry" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Add Log
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Analysis Feedback Section */}
