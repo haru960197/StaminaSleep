@@ -4,12 +4,14 @@ import { useEffect, useState, useCallback } from 'react';
 import { api, SleepLog } from '@/lib/api';
 import Link from 'next/link';
 import {
-  BarChart,
+  ComposedChart,
+  Line,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   ScatterChart,
   Scatter,
@@ -54,12 +56,14 @@ export default function Dashboard() {
     refreshData();
   }, [refreshData]);
 
-  // Prepare data for Bar Chart (Last 7 days)
+  // Prepare data for Composed Chart (Last 7 days)
   const last7DaysLogs = logs.slice(0, 7).reverse().map(log => {
       const duration = (new Date(log.wakeTime).getTime() - new Date(log.bedtime).getTime()) / (1000 * 60 * 60);
       return {
           date: new Date(log.bedtime).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }),
           duration: parseFloat(duration.toFixed(2)),
+          quality: log.quality,
+          vitality: log.vitality,
       };
   });
 
@@ -113,18 +117,22 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Bar Chart: Sleep Duration */}
+        {/* Composed Chart: Sleep Duration & Quality/Vitality */}
         <div className="bg-white p-4 shadow rounded-lg">
           <h2 className="text-lg font-semibold mb-4">Sleep Duration (Last 7 Logs)</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={last7DaysLogs}>
+              <ComposedChart data={last7DaysLogs}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
-                <YAxis label={{ value: 'Hours', angle: -90, position: 'insideLeft' }} />
+                <YAxis yAxisId="left" label={{ value: 'Hours', angle: -90, position: 'insideLeft' }} />
+                <YAxis yAxisId="right" orientation="right" domain={[1, 5]} label={{ value: 'Score', angle: 90, position: 'insideRight' }} />
                 <Tooltip />
-                <Bar dataKey="duration" fill="#8884d8" name="Hours" />
-              </BarChart>
+                <Legend />
+                <Bar yAxisId="left" dataKey="duration" fill="#8884d8" name="Duration (h)" />
+                <Line yAxisId="right" type="monotone" dataKey="quality" stroke="#ff7300" name="Quality" dot={{ r: 4, strokeWidth: 2 }} />
+                <Line yAxisId="right" type="monotone" dataKey="vitality" stroke="#82ca9d" name="Vitality" dot={{ r: 4, strokeWidth: 2 }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
