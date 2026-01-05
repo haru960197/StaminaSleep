@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Patch, Param, ParseIntPipe, Delete } from '@nestjs/common';
 import { SleepLogsService } from './sleep-logs.service';
 import { CreateSleepLogDto } from './dto/create-sleep-log.dto';
 import { UpdateSleepLogDto } from './dto/update-sleep-log.dto';
@@ -28,5 +28,10 @@ export class SleepLogsController {
     @Body() updateSleepLogDto: UpdateSleepLogDto,
   ) {
     return this.sleepLogsService.update(user.id, id, updateSleepLogDto);
+  }
+
+  @Delete(':id')
+  remove(@CurrentUser() user: any, @Param('id', ParseIntPipe) id: number) {
+    return this.sleepLogsService.remove(user.id, id);
   }
 }
