@@ -74,4 +74,22 @@ export class SleepLogsService {
       },
     });
   }
+
+  async remove(userId: number, id: number) {
+    const sleepLog = await this.prisma.sleepLog.findUnique({
+      where: { id },
+    });
+
+    if (!sleepLog) {
+      throw new NotFoundException(`Sleep log with ID ${id} not found`);
+    }
+
+    if (sleepLog.userId !== userId) {
+      throw new ForbiddenException('You are not allowed to delete this sleep log');
+    }
+
+    return this.prisma.sleepLog.delete({
+      where: { id },
+    });
+  }
 }
