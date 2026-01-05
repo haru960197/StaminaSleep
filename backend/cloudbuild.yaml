@@ -38,3 +38,7 @@ images:
 
 substitutions:
   _REGION: asia-northeast1 # デフォルトリージョン（東京）。必要に応じて変更してください。
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
