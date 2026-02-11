@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
   ScatterChart,
   Scatter,
+  Cell,
 } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EditSleepLogForm } from '@/components/EditSleepLogForm';
@@ -83,10 +84,18 @@ export default function Dashboard() {
   // Prepare data for Scatter Chart (Pressure vs Vitality)
   const scatterData = logs
     .filter(log => log.pressure != null && log.vitality != null)
-    .map(log => ({
-      pressure: log.pressure,
-      vitality: log.vitality,
-    }));
+    .map(log => {
+      const logDate = new Date(log.wakeTime);
+      const today = new Date();
+      const isToday = logDate.getDate() === today.getDate() &&
+                      logDate.getMonth() === today.getMonth() &&
+                      logDate.getFullYear() === today.getFullYear();
+      return {
+        pressure: log.pressure,
+        vitality: log.vitality,
+        isToday,
+      };
+    });
 
   const handleEditClick = (log: SleepLog) => {
     setEditingLog(log);
@@ -168,7 +177,11 @@ export default function Dashboard() {
                 <XAxis type="number" dataKey="pressure" name="Pressure" unit="hPa" domain={['auto', 'auto']} />
                 <YAxis type="number" dataKey="vitality" name="Vitality" unit="" domain={[0, 6]} tickCount={6} />
                 <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Scatter name="Logs" data={scatterData} fill="#82ca9d" />
+                <Scatter name="Logs" data={scatterData} fill="#82ca9d">
+                  {scatterData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.isToday ? 'orange' : '#82ca9d'} />
+                  ))}
+                </Scatter>
               </ScatterChart>
             </ResponsiveContainer>
           </div>
